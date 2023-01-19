@@ -164,6 +164,7 @@ aux1	 		db 		0
 aux2 			db 		0
 aux3			dw		0
 aux4			dw		0
+aux5			db		0
 
 ;Variables auxiliares para el manejo de posiciones
 col_aux 		db 		0
@@ -357,6 +358,8 @@ inicio:					;etiqueta inicio
 	inicializa_ds_es
 	comprueba_mouse		;macro para revisar driver de mouse
 	xor ax,0FFFFh		;compara el valor de AX con FFFFh, si el resultado es zero, entonces existe el driver de mouse
+	mov ah,0
+	int 1ah
 	jz imprime_ui		;Si existe el driver del mouse, entonces salta a 'imprime_ui'
 	;Si no existe el driver del mouse entonces se muestra un mensaje
 	lea dx,[no_mouse]
@@ -1188,6 +1191,53 @@ salir:				;inicia etiqueta salir
 		lea si,[next_rens]
 		mov [col_aux],next_col+10
 		mov [ren_aux],next_ren-1
+
+		mov ah,2ch
+		int 21h
+		mov [aux5],dl
+		cmp [aux5],14
+		jbe pieza_cuadro
+		cmp [aux5],28
+		jbe pieza_linea
+		cmp [aux5],42
+		jbe pieza_lnormal
+		cmp [aux5],56
+		jbe pieza_linvertida
+		cmp [aux5],70
+		jbe pieza_t
+		cmp [aux5],84
+		jbe pieza_snormal
+		jmp pieza_sinvertida
+
+		pieza_cuadro:
+		mov [next],cuadro
+		jmp next_cuadro
+		pieza_linea:
+		mov [next],linea
+		jmp next_linea
+		pieza_lnormal:
+		mov [next],lnormal
+		jmp next_l
+		pieza_linvertida:
+		mov [next],linvertida
+		jmp next_l_invertida
+		pieza_t:
+		mov [next],tnormal
+		jmp next_t
+		pieza_snormal:
+		mov [next],snormal
+		jmp next_s
+		pieza_sinvertida:
+		mov [next],sinvertida
+		jmp next_s_invertida
+
+		;mov al,dl
+		;xor ah,ah
+		;mov bx,6
+		;div bx
+		;mov [next],ah
+
+		;next_otro:
 		cmp [next],cuadro
 		je next_cuadro
 		cmp [next],linea
@@ -1245,6 +1295,8 @@ salir:				;inicia etiqueta salir
 	;Primero se debe calcular qué pieza se va a dibujar
 	;Dentro del procedimiento se utilizan variables referentes a la pieza actual
 	DIBUJA_ACTUAL proc
+		mov al,[pieza_next]
+		mov [pieza_actual],al
 		lea di,[pieza_cols]
 		lea si,[pieza_rens]
 		mov al,ini_columna
@@ -1299,13 +1351,24 @@ salir:				;inicia etiqueta salir
 		ret
 	endp
 
-	BORRA_PIEZA_ACTUAL proc
-		;Implementar
-		ret
-	endp
-
 	BORRA_NEXT proc
-		;implementar
+		lea di,[next_cols]
+		lea si,[next_rens]
+		mov [col_aux],next_col+10
+		mov [ren_aux],next_ren-1
+		mov cx,4
+	loop_borra_pieza_next:
+		push cx
+		push si
+		push di
+		posiciona_cursor [si],[di]
+		imprime_caracter_color 20h,cNegro,bgNegro
+		pop di
+		pop si
+		pop cx
+		inc di
+		inc si
+		loop loop_borra_pieza_next
 		ret
 	endp
 
@@ -1835,6 +1898,16 @@ DETERMINAR_COLISION proc
 	ret
 endp
 
+;NUMERO_ALEATORIO proc
+;	mov ah,2ch
+;	int 21h
+;	cmp dl,14
+;	jbe pieza_cuadro
+;	pieza_cuadro:
+;	mov [pieza_actual],cuadro
+;	ret
+;endp
+
 PARTIDA proc
 	verificar_colision:
 		lea di,[pieza_cols]
@@ -1869,6 +1942,8 @@ PARTIDA proc
 	cargar_pieza_next:
 		mov al,pieza_next
 		mov [pieza_actual],al
+		call BORRA_NEXT
+		call DIBUJA_NEXT
 		call DIBUJA_ACTUAL
 		jmp verificar_colision
 	terminar_partida:
