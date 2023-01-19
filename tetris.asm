@@ -1408,6 +1408,40 @@ AVANZA_PIEZA proc
 		ret
 	endp
 
+AVANZA_PIEZA_DERECHA proc
+		mov al,[di]
+		inc al
+		mov [di],al
+		mov al,[di+1]
+		inc al
+		mov [di+1],al
+		mov al,[di+2]
+		inc al
+		mov [di+2],al
+		mov al,[di+3]
+		inc al
+		mov [di+3],al
+		call DIBUJA_PIEZA
+		ret
+	endp
+
+AVANZA_PIEZA_IZQUIERDA proc
+		mov al,[di]
+		dec al
+		mov [di],al
+		mov al,[di+1]
+		dec al
+		mov [di+1],al
+		mov al,[di+2]
+		dec al
+		mov [di+2],al
+		mov al,[di+3]
+		dec al
+		mov [di+3],al
+		call DIBUJA_PIEZA
+		ret
+	endp
+
 GIRO_DER proc
 	mov al,[cont_rot]
 	cmp al,3
