@@ -471,6 +471,8 @@ boton_x3:
 
 	iniciar_partida:
 		call DIBUJA_NEXT
+		mov al,[pieza_next]
+		mov [pieza_actual],al
 		call DIBUJA_ACTUAL
 		call PARTIDA
 		jmp conversion_mouse
@@ -707,7 +709,7 @@ salir:				;inicia etiqueta salir
 	IMPRIME_DATOS_INICIALES proc
 		call DATOS_INICIALES 		;inicializa variables de juego
 		call IMPRIME_SCORES
-		mov [aux3],03h
+		mov [aux3],05h
 		mov [aux4],7000h
 		ret
 	endp
@@ -1231,13 +1233,6 @@ salir:				;inicia etiqueta salir
 		mov [next],sinvertida
 		jmp next_s_invertida
 
-		;mov al,dl
-		;xor ah,ah
-		;mov bx,6
-		;div bx
-		;mov [next],ah
-
-		;next_otro:
 		cmp [next],cuadro
 		je next_cuadro
 		cmp [next],linea
@@ -1295,8 +1290,6 @@ salir:				;inicia etiqueta salir
 	;Primero se debe calcular qué pieza se va a dibujar
 	;Dentro del procedimiento se utilizan variables referentes a la pieza actual
 	DIBUJA_ACTUAL proc
-		mov al,[pieza_next]
-		mov [pieza_actual],al
 		lea di,[pieza_cols]
 		lea si,[pieza_rens]
 		mov al,ini_columna
@@ -1938,22 +1931,12 @@ endp
 DETERMINAR_COLISION_IZQUIERDA proc
 endp
 
-;NUMERO_ALEATORIO proc
-;	mov ah,2ch
-;	int 21h
-;	cmp dl,14
-;	jbe pieza_cuadro
-;	pieza_cuadro:
-;	mov [pieza_actual],cuadro
-;	ret
-;endp
-
 PARTIDA proc
 	verificar_tecla_presionada:
-		lea di,[pieza_cols]
-		lea si,[pieza_rens]
-		push di
-		push si
+		;lea di,[pieza_cols]
+		;lea si,[pieza_rens]
+		;push di
+		;push si
 		mov ah,1
 		int 16h
 		jz verificar_colision
@@ -1969,26 +1952,35 @@ PARTIDA proc
 		;je verificar_colision_rotacion_izq
 		jmp verificar_colision
 	verificar_colision:
-		;lea di,[pieza_cols]
-		;lea si,[pieza_rens]
-		;push di
-		;push si
+		lea di,[pieza_cols]
+		lea si,[pieza_rens]
+		push di
+		push si
 		call DETERMINAR_COLISION
 		cmp [colision],0
 		jz actualizar_pieza
 		jmp verificar_fin_deo_juego
 	verificar_colision_derecha:
+		lea di,[pieza_cols]
+		lea si,[pieza_rens]
+		push di
+		push si
 		call BORRA_PIEZA
 		pop si
 		pop di
 		call AVANZA_PIEZA_DERECHA
 		jmp verificar_colision
 	verificar_colision_izquierda:
+		lea di,[pieza_cols]
+		lea si,[pieza_rens]
+		push di
+		push si
 		call BORRA_PIEZA
 		pop si
 		pop di
 		call AVANZA_PIEZA_IZQUIERDA
 		jmp verificar_colision
+	actualizar_pieza:
 		delay [aux3],[aux4]
 		call BORRA_PIEZA
 		pop si
@@ -2010,14 +2002,11 @@ PARTIDA proc
 		jnz terminar_partida
 		jmp cargar_pieza_next
 	cargar_pieza_next:
-		mov al,pieza_next
+		mov al,[pieza_next]
 		mov [pieza_actual],al
 		call BORRA_NEXT
 		call DIBUJA_NEXT
 		call DIBUJA_ACTUAL
-		mov ah,0Ch
-		mov al,0
-		int 21h
 		jmp verificar_tecla_presionada
 	terminar_partida:
 	ret
