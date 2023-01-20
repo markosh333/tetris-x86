@@ -1943,22 +1943,49 @@ endp
 ;endp
 
 PARTIDA proc
-	verificar_colision:
+	verificar_tecla_presionada:
 		lea di,[pieza_cols]
 		lea si,[pieza_rens]
 		push di
 		push si
+		mov ah,1
+		int 16h
+		jz verificar_colision
+		mov ah,0
+		int 16h
+		cmp ah,4dh
+		je verificar_colision_derecha
+		cmp ah,4bh
+		je verificar_colision_izquierda
+		jmp verificar_colision
+	verificar_colision:
+		;lea di,[pieza_cols]
+		;lea si,[pieza_rens]
+		;push di
+		;push si
 		call DETERMINAR_COLISION
 		cmp [colision],0
 		jz actualizar_pieza
 		jmp verificar_fin_deo_juego
+	verificar_colision_derecha:
+		call BORRA_PIEZA
+		pop si
+		pop di
+		call AVANZA_PIEZA_DERECHA
+		jmp verificar_colision
+	verificar_colision_izquierda:
+		call BORRA_PIEZA
+		pop si
+		pop di
+		call AVANZA_PIEZA_IZQUIERDA
+		jmp verificar_colision
 	actualizar_pieza:
 		delay [aux3],[aux4]
 		call BORRA_PIEZA
 		pop si
 		pop di
 		call AVANZA_PIEZA
-		jmp verificar_colision
+		jmp verificar_tecla_presionada
 	verificar_fin_deo_juego:
 		mov [colision],0
 		mov cl,ini_renglon
@@ -1979,7 +2006,7 @@ PARTIDA proc
 		call BORRA_NEXT
 		call DIBUJA_NEXT
 		call DIBUJA_ACTUAL
-		jmp verificar_colision
+		jmp verificar_tecla_presionada
 	terminar_partida:
 	ret
 endp
