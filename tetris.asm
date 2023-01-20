@@ -1932,6 +1932,12 @@ DETERMINAR_COLISION proc
 	ret
 endp
 
+DETERMINAR_COLISION_DERECHA proc
+endp
+
+DETERMINAR_COLISION_IZQUIERDA proc
+endp
+
 ;NUMERO_ALEATORIO proc
 ;	mov ah,2ch
 ;	int 21h
@@ -1957,6 +1963,10 @@ PARTIDA proc
 		je verificar_colision_derecha
 		cmp ah,4bh
 		je verificar_colision_izquierda
+		;cmp ah,48h
+		;je verificar_colision_rotacion_der
+		;cmp ah,50h
+		;je verificar_colision_rotacion_izq
 		jmp verificar_colision
 	verificar_colision:
 		;lea di,[pieza_cols]
@@ -1979,7 +1989,6 @@ PARTIDA proc
 		pop di
 		call AVANZA_PIEZA_IZQUIERDA
 		jmp verificar_colision
-	actualizar_pieza:
 		delay [aux3],[aux4]
 		call BORRA_PIEZA
 		pop si
@@ -2006,6 +2015,9 @@ PARTIDA proc
 		call BORRA_NEXT
 		call DIBUJA_NEXT
 		call DIBUJA_ACTUAL
+		mov ah,0Ch
+		mov al,0
+		int 21h
 		jmp verificar_tecla_presionada
 	terminar_partida:
 	ret
